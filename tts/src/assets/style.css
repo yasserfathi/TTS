@@ -1,0 +1,15 @@
+@font-face {
+    font-family: 'stc';
+	font-display:swap;
+    src: url('tirhal.otf') format('truetype');
+    font-weight: normal;
+    font-style: normal
+}
+@charset "UTF-8";
+*{font-family:"stc","Traditional Arabic",tahoma,Georgia,"Times New Roman", Times, serif}
+.theme--light.v-data-table > .v-data-table__wrapper > table > thead > tr > th{background-color:#0000001f;font-weight:bold;font-size:14px}
+.v-data-table > .v-data-table__wrapper > table > tbody > tr > td, .v-data-table > .v-data-table__wrapper > table > thead > tr > td, .v-data-table > .v-data-table__wrapper > table > tfoot > tr > td{font-size:14px}
+.v-data-table > .v-data-table__wrapper > table > tbody > tr > td {
+  width: 300px;
+  white-space:normal;
+}
