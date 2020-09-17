@@ -13,25 +13,25 @@
           </v-toolbar-title>
             <template>
       <v-tabs
-        dark fixed-tabs
+        fixed-tabs
+         color="white"
         v-model="tab"
         class="ml-0 pl-2"
-        icons-and-text
       >
         <v-tabs-slider></v-tabs-slider>
         <v-tab href="#new">
           <v-badge
-              color="pink"
-              content="60"
+              color="black"
             >
+            <span slot="badge"> {{createdtickts}} </span>
             <v-icon text>mdi-inbox</v-icon> New Ticket
             </v-badge>
         </v-tab>
         <v-tab href="#pending">
           <v-badge
-              color="pink"
-              content="6"
+              color="black"
             >
+            <span slot="badge"> {{openedtickts}} </span>
             <v-icon text>mdi-ticket</v-icon> Pending Ticket
             </v-badge>
         </v-tab>
@@ -80,12 +80,12 @@
         <v-flex lg12>
         <template>
         <v-tabs-items v-model="tab">
-          <v-tab-item value="new">
+          <v-tab-item value="new" :transition="false" :reverse-transition="false">
             <v-container color="grey" grid-list-md text-xs-center>
               <v-flex xs12>
                <v-form v-model="search_valid" ref="form" lazy-validation>
                 <v-container>
-                <v-row align="center" justify="justify" >
+                <v-row align="center" >
                 <v-col cols="1" md="1"></v-col>
                 <v-col cols="8" md="8">
                 <v-autocomplete
@@ -95,10 +95,8 @@
                           prepend-inner-icon="mdi-card-search-outline"
                           :items="tickets"
                           item-text="caller_name"
+                          placeholder="Search by Caller Name"
                           ></v-autocomplete>
-                </v-col>
-                <v-col>
-                    <v-btn color="success" @click="submit" :disabled="!search_valid"  class="mb-6 pa-6">بحث</v-btn>
                 </v-col>
              </v-row>
               </v-container>
@@ -123,7 +121,7 @@
             <template v-slot:top>
             <v-toolbar flat color="white">
     <template>
-  <v-row justify="center">
+  <v-row>
     <v-dialog v-model="dialog_det" fullscreen max-width="1000">
       <v-card>
         <v-toolbar dark color="primary">
@@ -218,25 +216,25 @@
               
             </v-container>
           </v-tab-item>
-          <v-tab-item value="pending">
+          <v-tab-item value="pending" :transition="false" :reverse-transition="false">
             <v-container color="grey" grid-list-md text-xs-center>
               <v-flex xs12>
                <v-form v-model="search_valid" ref="form" lazy-validation>
                 <v-container>
-                <v-row align="center" justify="justify" >
+                <v-row align="center" >
                 <v-col cols="1" md="1"></v-col>
                 <v-col cols="8" md="8">
                 <v-autocomplete
-                          id="search"
-                          name="search"
-                          v-model="search"
+                          id="search_pending"
+                          name="search_pending"
+                          v-model="search_pending"
+                          @click:append = "itemsForSelected"
                           prepend-inner-icon="mdi-card-search-outline"
                           :items="tickets"
                           item-text="caller_name"
+                          placeholder="Search by Caller Name"
+                          clearable deletable-chips
                           ></v-autocomplete>
-                </v-col>
-                <v-col>
-                    <v-btn color="success" @click="submit" :disabled="!search_valid"  class="mb-6 pa-6">بحث</v-btn>
                 </v-col>
              </v-row>
               </v-container>
@@ -247,7 +245,7 @@
             <v-data-table
               ref="myTable"
               :headers="headers"
-              :items="tickets"
+              :items="itemsForSelected"
               class="elevation-1"
               v-if="showtbl"
               :footer-props="{
@@ -261,7 +259,7 @@
             <template v-slot:top>
             <v-toolbar flat color="white">
     <template>
-  <v-row justify="center">
+  <v-row>
     <v-dialog v-model="dialog_det" fullscreen max-width="1000">
       <v-card>
         <v-toolbar dark color="primary">
@@ -398,6 +396,7 @@
         app: '',
         content: '',
         search: null,
+        search_pending: null,
         lazy: false,
         drawer: null,
         username: "",
@@ -434,6 +433,7 @@
         },
         posts: [],
         tickets: [],
+        ticketsall: [],
         pagination: {
                 current: 1,
                 total: 0
@@ -496,8 +496,9 @@
           }
         });
       },
-      submit() {
-      if (this.$refs.form.validate()) {
+      submit(item) {
+      console.log(item)
+      /*if (this.$refs.form.validate()) {
         const config = {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("storeddata"),
@@ -512,7 +513,7 @@
           .catch((error) => {
             this.ResponseData = error
           });
-      }
+      }*/
     },
         loadmodal(){
           this.chksave = true 
@@ -570,9 +571,11 @@
                     }
             }
             this.tickets = []
-           axios.get('http://127.0.0.1/backend/api/auth/ticket/search_status/created',config)
-                .then(response => {
+           axios.get('http://127.0.0.1/backend/api/auth/ticket/created_opened_status',config)
+                .then(response => { 
                       this.tickets = response.data.ticket
+                      this.ticketsall = response.data.ticket
+                      console.log(this.ticketsall)
                 })
                 .catch(error => {
                   this.ResponseData = error
@@ -602,9 +605,10 @@
                         }
                 }
                 this.tickets = []
-              axios.put('http://127.0.0.1/backend/api/auth/ticket/update_status',{ id:this.editedItem['id'],status: 'opened' },config)
+              axios.post('http://127.0.0.1/backend/api/auth/ticket/update_status',{ id:this.editedItem['id'],status: 'opened' },config)
                     .then(response => {
-                          this.tickets = response.data.ticket
+                          this.getData()
+                          console.log(response)
                     })
                     .catch(error => {
                       this.ResponseData = error
@@ -621,22 +625,42 @@
           this.dialog = true
         },
     },
-    created() {
+    mounted() {
       //this.username = localStorage.getItem("storeddata");
       this.check_Token();
       this.getData()
       setTimeout(() => {
-        this.check_Token();
-      }, 60000);
+        /*this.check_Token()
+        this.getData()*/
+        alert('F')
+      }, 2000);
       //this.check_Token()
       //this.username = shared.check_Token()
     },
-    computed: {
-      filterByVal() {
-        return this.categories.filter((categories) => {
-          return categories.category_type.match(this.type)
-        });
+    watch: {
+      createdtickts(newValue) {
+            alert(`yes, createdtickts changed: ${newValue}`);
       },
+      openedtickts(newValue) {
+            alert(`yes, openedtickts changed: ${newValue}`);
+      },
+    },
+    computed: {
+      createdtickts() {
+          return this.ticketsall.filter((ticketsall) => {
+              return ticketsall.status.match('created')
+          }).length;
+      },
+      openedtickts() {
+          return this.ticketsall.filter((ticketsall) => {
+              return ticketsall.status.match('opened')
+          }).length;
+      },
+      itemsForSelected() {
+          return this.tickets.filter((tickets) => {
+              return tickets.caller_name.match(this.search_pending)
+          });
+      }
     },
   }
 </script>

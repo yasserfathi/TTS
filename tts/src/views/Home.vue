@@ -178,7 +178,7 @@ export default {
             }
             this.$swal(this.msg,'',this.icon)
             this.ResponseData = error
-            console.clear()
+            console.log(error.message)
           });
       }
     },

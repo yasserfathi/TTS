@@ -124,17 +124,28 @@ class TicketController extends Controller
         }
     }
 	
+	public function created_opened_status()
+    {
+        if(Auth::check())
+        {
+            $result = Ticket::where('status','=', 'created')->orwhere('status','=', 'opened')->get();
+            return response()->json([
+                'ticket' => $result
+            ], 201);
+        }
+    }
+	
 	public function update_status(Request $request)
     {
         if(Auth::check())
         {
-            $result = Ticket::where('status','=', $status)->get();
+            $result = Ticket::where('status','=', $request->status)->get();
 			$ticket = Ticket::find($request->id);
 			$ticket->status = $request->status;
 			$ticket->save();
 			
             return response()->json([
-                'ticket' => 'Done'
+                'ticket' => 'Updated'
             ], 201);
         }
     }
