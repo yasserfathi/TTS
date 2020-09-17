@@ -575,12 +575,15 @@
                 .then(response => { 
                       this.tickets = response.data.ticket
                       this.ticketsall = response.data.ticket
-                      console.log(this.ticketsall)
+                      console.log(response)
                 })
                 .catch(error => {
                   this.ResponseData = error
                   console.log(error)
                 })
+            setTimeout(function () {
+               this.getData()
+            }, 3000);
         },
         viewItem(item){
           this.editedIndex = this.categories.indexOf(item)
@@ -629,11 +632,7 @@
       //this.username = localStorage.getItem("storeddata");
       this.check_Token();
       this.getData()
-      setTimeout(() => {
-        /*this.check_Token()
-        this.getData()*/
-        alert('F')
-      }, 2000);
+      //setTimeout(function () { this.check_Token(); this.getData(); }.bind(this), 1000)
       //this.check_Token()
       //this.username = shared.check_Token()
     },
